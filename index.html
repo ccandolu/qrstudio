@@ -150,7 +150,7 @@ button,.upload,.theme-btn,.type,.btn{-webkit-tap-highlight-color:transparent;tou
 .qr-stage{min-width:0}
 #qr{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
 #qr svg,#qr canvas{display:block;max-width:100%!important;max-height:100%!important;object-fit:contain}
-.upload{position:relative;min-height:66px}
+.upload{position:relative;min-height:66px;width:100%;text-align:left;font-family:inherit;color:inherit}
 .upload input{display:block;position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .theme-btn{white-space:nowrap}
 .status{line-height:1.45}
@@ -265,7 +265,7 @@ body[data-theme="dark"] .theme-btn.active{background:#f0f1f3;color:#17181b}
         <div class="field"><label for="bg">Arka plan</label><div class="color-row"><input class="colorbox" type="color" id="bg" value="#ffffff"><input class="input" id="bghex" value="#ffffff" maxlength="7"></div></div>
       </div>
       <div class="field"><div class="labelrow"><label for="size">QR boyutu</label><span class="hint" id="sizeval">320 × 320 px</span></div><input class="range" type="range" id="size" min="180" max="1000" step="20" value="320"></div>
-      <div class="field"><label>Merkeze logo ekle <span class="hint">İsteğe bağlı</span></label><label class="upload" for="logo"><span class="upload-icon">＋</span><span><strong id="logo-name">Logo veya görsel seç</strong><small>PNG, JPG veya SVG</small></span><input type="file" id="logo" accept="image/png,image/jpeg,image/svg+xml,image/webp"></label></div>
+      <div class="field"><label>Merkeze logo ekle <span class="hint">İsteğe bağlı</span></label><button type="button" class="upload" id="pickLogo"><span class="upload-icon">＋</span><span style="text-align:left"><strong id="logo-name">Logo veya görsel seç</strong><small>PNG, JPG, WEBP veya SVG · Maks. 5 MB</small></span></button><input type="file" id="logo" accept="image/*,.png,.jpg,.jpeg,.webp,.svg" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
       <div class="field"><label for="dots">Nokta stili</label><select id="dots"><option value="square">Kare</option><option value="dots">Yuvarlak</option><option value="rounded">Yumuşak köşeli</option><option value="classy">Zarif</option><option value="classy-rounded">Zarif yuvarlak</option><option value="extra-rounded">Ekstra yuvarlak</option></select></div>
     </section>
     <aside class="panel preview-panel">
@@ -319,16 +319,32 @@ $('#fields').querySelector('#url').value='https://example.com';
 $('#fields').addEventListener('input',schedule);
 ['fg','bg','dots','size'].forEach(id=>$('#'+id).addEventListener('input',()=>{if(id==='fg'||id==='bg')$('#'+id+'hex').value=$('#'+id).value;schedule()}));
 ['fghex','bghex'].forEach(id=>$('#'+id).addEventListener('change',()=>{const target=id==='fghex'?'fg':'bg';if(/^#[0-9a-f]{6}$/i.test($('#'+id).value)){$('#'+target).value=$('#'+id).value;schedule()}else $('#'+id).value=$('#'+target).value}));
+$('#pickLogo').addEventListener('click',()=>$('#logo').click());
 $('#logo').addEventListener('change',e=>{
  const f=e.target.files&&e.target.files[0];if(!f)return;
- if(!/^image\/(png|jpeg|webp|svg\+xml)$/i.test(f.type)){notify('PNG, JPG, WEBP veya SVG dosyası seç.');e.target.value='';return}
  if(f.size>5*1024*1024){notify('Logo en fazla 5 MB olabilir.');e.target.value='';return}
  const reader=new FileReader();
- reader.onerror=()=>{notify('Dosya okunamadı. Başka bir görsel dene.');e.target.value=''};
+ reader.onerror=()=>{notify('Dosya okunamadı. Yeniden deneyebilir misin?');e.target.value=''};
  reader.onload=()=>{
    const image=new Image();
-   image.onload=()=>{logoData=reader.result;$('#logo-name').textContent=f.name;$('#status').textContent='Logo yüklendi · QR önizlemesi güncellendi.';schedule()};
-   image.onerror=()=>{notify('Bu görsel açılamadı. PNG veya JPG deneyebilirsin.');e.target.value=''};
+   image.onload=()=>{
+     try{
+       // Normalize the selected image to PNG data. This avoids MIME-type
+       // inconsistencies from iOS Files/Photos and makes embedding reliable.
+       const canvas=document.createElement('canvas');
+       const maxSide=900,scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+       canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+       canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+       const ctx=canvas.getContext('2d');
+       ctx.clearRect(0,0,canvas.width,canvas.height);
+       ctx.drawImage(image,0,0,canvas.width,canvas.height);
+       logoData=canvas.toDataURL('image/png');
+       $('#logo-name').textContent=f.name;
+       $('#status').textContent='Logo yüklendi · QR önizlemesi güncelleniyor.';
+       render();
+     }catch(err){notify('Görsel işlenemedi. PNG veya JPG dosyası dene.')}
+   };
+   image.onerror=()=>{notify('Bu görsel açılamadı. PNG veya JPG dosyası dene.');e.target.value=''};
    image.src=reader.result;
  };
  reader.readAsDataURL(f);
