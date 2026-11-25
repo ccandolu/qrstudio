@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101113">
+<title>QR Studio — QR Kod Oluşturucu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f5f5f7;--surface:#ffffff;--surface2:#f5f5f7;--line:#e5e5ea;
+  --text:#1d1d1f;--muted:#86868b;--accent:#0071e3;--radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+header{height:64px;border-bottom:1px solid #d2d2d7;background:#ffffffd9;backdrop-filter:saturate(180%) blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 max(28px,calc((100vw - 1180px)/2));position:sticky;top:0;z-index:5}
+.header-right{display:flex;align-items:center;gap:15px}
+.theme-switch{display:flex;align-items:center;gap:3px;padding:3px;background:#f0f0f2;border:1px solid #e5e5ea;border-radius:9px}
+.theme-btn{border:0;background:transparent;color:#6e6e73;padding:6px 9px;border-radius:6px;font:550 11px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}
+.theme-btn.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 3px #00000012}
+.brand{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:650;letter-spacing:-.02em}
+.brandmark{width:28px;height:28px;border-radius:8px;background:#1d1d1f;color:white;display:grid;place-items:center;font-size:17px;font-weight:400}
+.header-note{font-size:12px;color:var(--muted)}
+main{max-width:1180px;margin:0 auto;padding:54px 28px 64px}
+.intro{margin-bottom:34px;text-align:center}
+.eyebrow{font-size:11px;color:var(--muted);letter-spacing:.11em;text-transform:uppercase;font-weight:650}
+.intro h1{font-size:clamp(34px,5vw,48px);line-height:1.08;letter-spacing:-.055em;font-weight:700;margin:13px 0 12px}
+.intro p{color:#6e6e73;margin:0;font-size:15px;line-height:1.55}
+.workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:20px;align-items:start}
+.panel{background:var(--surface);border:1px solid #e7e7eb;border-radius:20px;padding:25px;box-shadow:0 2px 8px #00000005,0 12px 32px #00000005}
+.panel-title{font-size:15px;font-weight:650;letter-spacing:-.02em;margin:0 0 19px;display:flex;align-items:center;gap:9px}
+.step{font-size:10px;color:#6e6e73;background:#f5f5f7;border:0;border-radius:6px;padding:5px 7px;letter-spacing:.04em}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px}
+.type{background:#fff;border:1px solid #e5e5ea;color:#424245;border-radius:11px;padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;font:550 11px -apple-system,BlinkMacSystemFont,sans-serif;transition:background .16s,border-color .16s,color .16s}
+.type .ico{font-size:17px;color:#6e6e73}
+.type:hover{background:#f5f5f7;border-color:#d2d2d7}
+.type.active{background:#eef6ff;border-color:#9ccaff;color:#0066cc}
+.type.active .ico{color:#0071e3}
+.field{margin:0 0 17px}
+.field label,.labelrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:#424245;margin-bottom:8px}
+.hint{font-size:10px;color:var(--muted);font-weight:400}
+.input,textarea,select{width:100%;background:#fff;border:1px solid #d2d2d7;border-radius:10px;padding:12px 13px;color:#1d1d1f;font:13px -apple-system,BlinkMacSystemFont,sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.input::placeholder,textarea::placeholder{color:#a1a1a6}
+.input:focus,textarea:focus,select:focus{border-color:#0071e3;box-shadow:0 0 0 3px #0071e31c}
+textarea{min-height:94px;resize:vertical}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%2386868b' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.divider{height:1px;background:#e5e5ea;margin:23px 0}
+.color-row{display:flex;gap:9px;align-items:center}
+.colorbox{height:42px;width:48px;padding:4px;background:#fff;border:1px solid #d2d2d7;border-radius:9px;cursor:pointer}
+.color-row .input{flex:1}
+.range{width:100%;accent-color:#0071e3}
+.upload{border:1px dashed #c7c7cc;background:#fafafa;border-radius:11px;padding:13px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s,border-color .15s}
+.upload:hover{background:#f5f5f7;border-color:#a1a1a6}
+.upload strong{font-size:12px;display:block;color:#1d1d1f}.upload small{color:var(--muted);font-size:10px}
+.upload input{display:none}
+.upload-icon{width:34px;height:34px;background:#ededf0;border-radius:9px;display:grid;place-items:center;font-size:16px;color:#424245}
+.preview-panel{position:sticky;top:84px;text-align:center}
+.preview-panel .panel-title{text-align:left}
+.qr-stage{min-height:320px;background:#f5f5f7;border:1px solid #ebebef;border-radius:15px;display:grid;place-items:center;padding:28px;position:relative;overflow:hidden}
+.qr-stage:before{content:none}
+#qr{position:relative;z-index:1;line-height:0}
+#qr canvas,#qr svg{max-width:100%;height:auto!important;border-radius:3px}
+.empty{color:#86868b;font-size:12px;position:relative;z-index:1}
+.preview-caption{font-size:11px;color:var(--muted);margin:14px 0 18px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn{border:1px solid #d2d2d7;background:#fff;color:#1d1d1f;border-radius:10px;padding:12px 14px;font:600 12px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:background .15s,border-color .15s}
+.btn:hover{background:#f5f5f7}
+.btn.primary{background:#0071e3;color:white;border-color:#0071e3}
+.btn.primary:hover{background:#0077ed}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.status{font-size:10px;color:#86868b;margin-top:14px;min-height:14px}
+.footer{color:#a1a1a6;font-size:10px;text-align:center;margin-top:35px;letter-spacing:.04em}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#1d1d1f;color:white;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:10;box-shadow:0 6px 24px #0002}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+input[type=checkbox]{accent-color:#0071e3}
+
+/* Theme variants: light (default), navy and dark */
+body[data-theme="navy"]{--bg:#eef2f8;--surface:#f9fbff;--surface2:#e8eef7;--line:#d3ddec;--text:#14243d;--muted:#687b96;--accent:#173f70;background:radial-gradient(ellipse at 50% -20%,#dce7f5 0%,#eef2f8 58%,#e8edf5 100%)}
+body[data-theme="navy"] header{background:#f7f9fce8;border-color:#d7e0ec}
+body[data-theme="navy"] .brandmark{background:#173f70}
+body[data-theme="navy"] .panel{background:#f9fbff;border-color:#d8e1ed;box-shadow:0 3px 14px #173f700a,0 14px 34px #173f7008}
+body[data-theme="navy"] .step{background:#eaf0f8;color:#526987}
+body[data-theme="navy"] .type{background:#f7f9fc;border-color:#d8e1ed;color:#405574}
+body[data-theme="navy"] .type.active{background:#e6eef9;border-color:#9bb4d3;color:#173f70}
+body[data-theme="navy"] .type.active .ico{color:#173f70}
+body[data-theme="navy"] .input,body[data-theme="navy"] textarea,body[data-theme="navy"] select{background:#fff;border-color:#cbd7e6;color:#172b48}
+body[data-theme="navy"] .input:focus,body[data-theme="navy"] textarea:focus,body[data-theme="navy"] select:focus{border-color:#315d91;box-shadow:0 0 0 3px #315d911b}
+body[data-theme="navy"] .divider{background:#dce4ef}
+body[data-theme="navy"] .upload{background:#f5f8fc;border-color:#c4d2e3}
+body[data-theme="navy"] .upload-icon{background:#e6edf6;color:#274b78}
+body[data-theme="navy"] .qr-stage{background:#edf2f8;border-color:#dce4ef}
+body[data-theme="navy"] .btn{background:#f7f9fc;border-color:#cbd7e6;color:#183253}
+body[data-theme="navy"] .btn.primary{background:#173f70;border-color:#173f70;color:#fff}
+body[data-theme="navy"] .btn.primary:hover{background:#214f86}
+body[data-theme="navy"] .theme-switch{background:#e7edf5;border-color:#d4deeb}
+body[data-theme="navy"] .theme-btn{color:#61748e}
+body[data-theme="navy"] .theme-btn.active{background:#173f70;color:#fff;box-shadow:0 1px 3px #102b4c22}
+body[data-theme="navy"] .footer{color:#8292a8}
+body[data-theme="navy"] .toast{background:#173f70;color:#fff}
+body[data-theme="navy"] input[type=checkbox]{accent-color:#173f70}
+body[data-theme="dark"]{color-scheme:dark;--bg:#101114;--surface:#191a1f;--surface2:#222329;--line:#303137;--text:#f5f5f7;--muted:#989aa2;--accent:#8abfff;background:radial-gradient(ellipse at 50% -20%,#282a31 0%,#15161a 50%,#101114 85%)}
+body[data-theme="dark"] header{background:#15161ae8;border-color:#303137}
+body[data-theme="dark"] .brandmark{background:#f1f2f4;color:#17181b}
+body[data-theme="dark"] .intro p,body[data-theme="dark"] .field label,body[data-theme="dark"] .labelrow{color:#c5c6cc}
+body[data-theme="dark"] .panel{background:#191a1f;border-color:#303137;box-shadow:0 12px 40px #0003}
+body[data-theme="dark"] .step{background:#27282e;color:#b9bbc3}
+body[data-theme="dark"] .type{background:#202126;border-color:#37383f;color:#c7c8ce}
+body[data-theme="dark"] .type .ico{color:#a8aab2}
+body[data-theme="dark"] .type.active{background:#e9eaed;border-color:#e9eaed;color:#17181b}
+body[data-theme="dark"] .type.active .ico{color:#17181b}
+body[data-theme="dark"] .input,body[data-theme="dark"] textarea,body[data-theme="dark"] select{background:#111216;border-color:#3a3b42;color:#f5f5f7}
+body[data-theme="dark"] .input::placeholder,body[data-theme="dark"] textarea::placeholder{color:#777982}
+body[data-theme="dark"] .input:focus,body[data-theme="dark"] textarea:focus,body[data-theme="dark"] select:focus{border-color:#8abfff;box-shadow:0 0 0 3px #8abfff20}
+body[data-theme="dark"] .divider{background:#303137}
+body[data-theme="dark"] .colorbox{background:#111216;border-color:#3a3b42}
+body[data-theme="dark"] .upload{background:#111216;border-color:#45464e}
+body[data-theme="dark"] .upload:hover{background:#202126}
+body[data-theme="dark"] .upload strong{color:#f5f5f7}
+body[data-theme="dark"] .upload-icon{background:#292a30;color:#e2e3e7}
+body[data-theme="dark"] .qr-stage{background:#f1f1ef;border-color:#3a3b42}
+body[data-theme="dark"] .btn{background:#25262c;border-color:#414249;color:#f5f5f7}
+body[data-theme="dark"] .btn:hover{background:#303137}
+body[data-theme="dark"] .btn.primary{background:#f0f1f3;border-color:#f0f1f3;color:#17181b}
+body[data-theme="dark"] .theme-switch{background:#24252b;border-color:#383940}
+body[data-theme="dark"] .theme-btn{color:#aeb0b8}
+body[data-theme="dark"] .theme-btn.active{background:#e9eaed;color:#17181b;box-shadow:0 1px 3px #0004}
+body[data-theme="dark"] .footer{color:#777982}
+body[data-theme="dark"] .toast{background:#f0f1f3;color:#17181b}
+body[data-theme="dark"] input[type=checkbox]{accent-color:#8abfff}
+
+@media(max-width:800px){
+  main{padding:36px 16px 48px}.workspace{grid-template-columns:1fr}
+  .preview-panel{position:static;grid-row:1}.panel{padding:19px}
+  .qr-stage{min-height:270px}.type-grid{grid-template-columns:repeat(4,1fr)}
+  header{padding:0 17px}.header-note{display:none}.header-right{gap:0}.theme-btn{padding:6px 7px}
+}
+@media(max-width:390px){.type{font-size:10px;padding:10px 3px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="brandmark">⌗</span> QR STUDIO</div><div class="header-right"><div class="theme-switch" role="group" aria-label="Görünüm seçimi"><button class="theme-btn active" data-theme-choice="light">Açık</button><button class="theme-btn" data-theme-choice="navy">Lacivert</button><button class="theme-btn" data-theme-choice="dark">Koyu</button></div><div class="header-note">QR kod oluşturucu</div></div></header>
+<main>
+  <section class="intro"><div class="eyebrow">QR STUDIO</div><h1>Bir taramayla paylaş.</h1><p>İçeriğini ekle. Görünümünü düzenle. QR kodunu indir.</p></section>
+  <div class="workspace">
+    <section class="panel">
+      <h2 class="panel-title"><span class="step">01</span> İçerik türü</h2>
+      <div class="type-grid" id="types">
+        <button class="type active" data-type="url"><span class="ico">↗</span>Web sitesi</button>
+        <button class="type" data-type="text"><span class="ico">T</span>Metin</button>
+        <button class="type" data-type="wifi"><span class="ico">⌁</span>Wi-Fi</button>
+        <button class="type" data-type="phone"><span class="ico">⌕</span>Telefon</button>
+        <button class="type" data-type="email"><span class="ico">✉</span>E-posta</button>
+        <button class="type" data-type="whatsapp"><span class="ico">◉</span>WhatsApp</button>
+        <button class="type" data-type="location"><span class="ico">⌖</span>Konum</button>
+      </div>
+      <div id="fields"></div>
+      <div class="divider"></div>
+      <h2 class="panel-title"><span class="step">02</span> Tasarımını özelleştir</h2>
+      <div class="two">
+        <div class="field"><label for="fg">QR rengi</label><div class="color-row"><input class="colorbox" type="color" id="fg" value="#17181b"><input class="input" id="fghex" value="#17181b" maxlength="7"></div></div>
+        <div class="field"><label for="bg">Arka plan</label><div class="color-row"><input class="colorbox" type="color" id="bg" value="#ffffff"><input class="input" id="bghex" value="#ffffff" maxlength="7"></div></div>
+      </div>
+      <div class="field"><div class="labelrow"><label for="size">QR boyutu</label><span class="hint" id="sizeval">320 × 320 px</span></div><input class="range" type="range" id="size" min="180" max="1000" step="20" value="320"></div>
+      <div class="field"><label>Merkeze logo ekle <span class="hint">İsteğe bağlı</span></label><label class="upload" for="logo"><span class="upload-icon">＋</span><span><strong id="logo-name">Logo veya görsel seç</strong><small>PNG, JPG veya SVG</small></span><input type="file" id="logo" accept="image/png,image/jpeg,image/svg+xml,image/webp"></label></div>
+      <div class="field"><label for="dots">Nokta stili</label><select id="dots"><option value="square">Kare</option><option value="dots">Yuvarlak</option><option value="rounded">Yumuşak köşeli</option><option value="classy">Zarif</option><option value="classy-rounded">Zarif yuvarlak</option><option value="extra-rounded">Ekstra yuvarlak</option></select></div>
+    </section>
+    <aside class="panel preview-panel">
+      <h2 class="panel-title"><span class="step">03</span> Canlı önizleme</h2>
+      <div class="qr-stage"><div id="qr"><div class="empty">QR kodun burada görünecek</div></div></div>
+      <div class="preview-caption">QR kodun hazır. Kamerayla tarayarak test edebilirsin.</div>
+      <div class="actions"><button class="btn primary" id="png" disabled>↓ PNG indir</button><button class="btn" id="svg" disabled>↓ SVG indir</button></div>
+      <div class="status" id="status">Başlamak için içerik gir.</div>
+    </aside>
+  </div>
+  <div class="footer">QR Studio <span aria-hidden="true">·</span> Can Dolu tarafından tasarlandı</div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+let currentType='url',qr=null,logoData=null,debounce;
+const templates={
+ url:`<div class="field"><label for="url">Web sitesi adresi</label><input class="input" id="url" placeholder="https://ornek.com" autocomplete="url"></div>`,
+ text:`<div class="field"><label for="text">Metnin</label><textarea id="text" placeholder="QR kod okutulduğunda gösterilecek metni yaz..."></textarea></div>`,
+ wifi:`<div class="field"><label for="ssid">Ağ adı (SSID)</label><input class="input" id="ssid" placeholder="Wi-Fi ağının adı"></div><div class="two"><div class="field"><label for="password">Şifre</label><input class="input" id="password" placeholder="Wi-Fi şifresi"></div><div class="field"><label for="security">Güvenlik</label><select id="security"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">Şifresiz</option></select></div></div><label style="font-size:11px;color:#b9bbc2"><input type="checkbox" id="hidden"> Gizli ağ</label>`,
+ phone:`<div class="field"><label for="phone">Telefon numarası</label><input class="input" id="phone" placeholder="+90 5XX XXX XX XX" inputmode="tel"></div>`,
+ email:`<div class="field"><label for="mail">E-posta adresi</label><input class="input" id="mail" placeholder="ornek@mail.com"></div><div class="field"><label for="subject">Konu</label><input class="input" id="subject" placeholder="E-posta konusu"></div><div class="field"><label for="body">Mesaj</label><textarea id="body" placeholder="Mesajın..."></textarea></div>`,
+ whatsapp:`<div class="field"><label for="wa">WhatsApp numarası</label><input class="input" id="wa" placeholder="905XXXXXXXXX" inputmode="tel"><span class="hint">Ülke koduyla, başında + olmadan yaz.</span></div><div class="field"><label for="wam">Hazır mesaj <span class="hint">İsteğe bağlı</span></label><textarea id="wam" placeholder="Merhaba, bilgi almak istiyorum."></textarea></div>`,
+ location:`<div class="two"><div class="field"><label for="lat">Enlem</label><input class="input" id="lat" placeholder="36.075" inputmode="decimal"></div><div class="field"><label for="lon">Boylam</label><input class="input" id="lon" placeholder="32.836" inputmode="decimal"></div></div><div class="hint">Google Maps'ten koordinatları kopyalayabilirsin.</div>`
+};
+function content(){
+ const v=id=>($(id)?$(id).value.trim():'');
+ switch(currentType){
+ case'url':return v('#url');
+ case'text':return v('#text');
+ case'wifi':{const s=v('#ssid'),p=v('#password'),t=v('#security');return s?`WIFI:T:${t};S:${s};P:${t==='nopass'?'':p};H:${$('#hidden').checked?'true':'false'};;`:''}
+ case'phone':return v('#phone')?'tel:'+v('#phone').replace(/[^\d+]/g,''):'';
+ case'email':return v('#mail')?'mailto:'+v('#mail')+'?subject='+encodeURIComponent(v('#subject'))+'&body='+encodeURIComponent(v('#body')):'';
+ case'whatsapp':return v('#wa')?'https://wa.me/'+v('#wa').replace(/\D/g,'')+(v('#wam')?'?text='+encodeURIComponent(v('#wam')):''):'';
+ case'location':return v('#lat')&&v('#lon')?`https://www.google.com/maps?q=${encodeURIComponent(v('#lat'))},${encodeURIComponent(v('#lon'))}`:'';
+ }
+}
+function notify(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function render(){
+ const data=content(),size=Number($('#size').value);
+ $('#sizeval').textContent=size+' × '+size+' px';
+ if(!data){$('#qr').innerHTML='<div class="empty">Bilgilerini girdiğinde QR kodun burada görünecek</div>';$('#png').disabled=$('#svg').disabled=true;$('#status').textContent='QR kod oluşturmak için gerekli alanları doldur.';qr=null;return}
+ if(typeof QRCodeStyling==='undefined'){$('#status').textContent='QR kütüphanesi yüklenemedi. İnternet bağlantını kontrol et.';return}
+ const opts={width:size,height:size,type:'svg',data,margin:8,qrOptions:{errorCorrectionLevel:'H'},image:logoData||undefined,imageOptions:{hideBackgroundDots:true,imageSize:.24,margin:5,crossOrigin:'anonymous'},dotsOptions:{color:$('#fg').value,type:$('#dots').value},backgroundOptions:{color:$('#bg').value},cornersSquareOptions:{color:$('#fg').value,type:'extra-rounded'},cornersDotOptions:{color:$('#fg').value,type:'dot'}};
+ qr=new QRCodeStyling(opts);$('#qr').innerHTML='';qr.append($('#qr'));$('#png').disabled=$('#svg').disabled=false;$('#status').textContent='QR kod başarıyla oluşturuldu.';
+}
+function schedule(){clearTimeout(debounce);debounce=setTimeout(render,180)}
+$('#types').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(!b)return;currentType=b.dataset.type;document.querySelectorAll('.type').forEach(x=>x.classList.toggle('active',x===b));$('#fields').innerHTML=templates[currentType];$('#fields').querySelectorAll('input,textarea,select').forEach(x=>x.addEventListener('input',schedule));render()});
+$('#fields').innerHTML=templates.url;
+$('#fields').addEventListener('input',schedule);
+['fg','bg','dots','size'].forEach(id=>$('#'+id).addEventListener('input',()=>{if(id==='fg'||id==='bg')$('#'+id+'hex').value=$('#'+id).value;schedule()}));
+['fghex','bghex'].forEach(id=>$('#'+id).addEventListener('change',()=>{const target=id==='fghex'?'fg':'bg';if(/^#[0-9a-f]{6}$/i.test($('#'+id).value)){$('#'+target).value=$('#'+id).value;schedule()}else $('#'+id).value=$('#'+target).value}));
+$('#logo').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024){notify('Logo en fazla 2 MB olabilir.');e.target.value='';return}const r=new FileReader();r.onload=()=>{logoData=r.result;$('#logo-name').textContent=f.name;schedule()};r.readAsDataURL(f)});
+$('#png').addEventListener('click',()=>{if(qr)qr.download({name:'qr-studio',extension:'png'})});
+$('#svg').addEventListener('click',()=>{if(qr)qr.download({name:'qr-studio',extension:'svg'})});
+document.querySelectorAll('[data-theme-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+  const theme=btn.dataset.themeChoice;
+  document.body.dataset.theme=theme==='light'?'light':theme;
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b===btn));
+  try{localStorage.setItem('qr-studio-theme',theme)}catch(e){}
+}));
+try{
+  const savedTheme=localStorage.getItem('qr-studio-theme')||'light';
+  document.body.dataset.theme=savedTheme==='light'?'light':savedTheme;
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===savedTheme));
+}catch(e){}
+render();
+</script>
+</body>
+</html>
